@@ -24,7 +24,7 @@ import com.babybloom.data.local.entity.*
         AppNotificationEntity::class
     ],
     version = 15,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao

@@ -318,6 +318,12 @@ class ChildProfileViewModel @Inject constructor(
     }
 
     fun onRefreshInsight() {
+        if (BuildConfig.GEMINI_API_KEY.isBlank()) {
+            _uiState.update {
+                it.copy(insightGenerationError = context.getString(R.string.ai_not_configured))
+            }
+            return
+        }
         viewModelScope.launch {
             val latest = aiInsightRepository.getLatestForChild(childId)
             if (!InsightGenerationPolicy.canGenerate(latest?.generatedAt)) {
@@ -365,7 +371,9 @@ class ChildProfileViewModel @Inject constructor(
                 }
                 scheduleInsightLimitReset()
             } catch (exception: Exception) {
-                Log.e("BabyBloomInsights", "Insight generation failed for childId=$childId", exception)
+                if (BuildConfig.DEBUG) {
+                    Log.e("BabyBloomInsights", "Insight generation failed", exception)
+                }
                 val technicalDetail = exception.message
                     ?.replace(Regex("key=[^&\\s]+"), "key=<redacted>")
                     ?.take(180)

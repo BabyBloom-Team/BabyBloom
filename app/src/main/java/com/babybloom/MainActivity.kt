@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
         }
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                seeder.seedIfEmpty()
+                if (BuildConfig.DEBUG) seeder.seedIfEmpty()
                 learningContentSeeder.seedIfEmpty()
                 activitySeeder.seedIfEmpty()
                 android.util.Log.d("SEEDER", "Seeding completed successfully")

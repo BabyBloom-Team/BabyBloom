@@ -3,7 +3,10 @@ package com.babybloom.presentation.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babybloom.data.local.dao.UserDao
+import com.babybloom.data.repository.LocalPasswordStore
+import com.babybloom.data.repository.PasswordChangeResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,6 +16,8 @@ import javax.inject.Inject
 data class ChangePasswordUiState(
     val fullName             : String  = "",
     val email                : String  = "",
+    val currentPassword      : String  = "",
+    val currentPasswordError : String? = null,
     val newPassword          : String  = "",
     val confirmPassword      : String  = "",
     val newPasswordVisible   : Boolean = false,
@@ -28,7 +33,8 @@ data class ChangePasswordUiState(
 
 @HiltViewModel
 class ChangePasswordViewModel @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val passwordStore: LocalPasswordStore
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChangePasswordUiState())
@@ -41,6 +47,10 @@ class ChangePasswordViewModel @Inject constructor(
 
     fun onEmailChanged(email: String) {
         _uiState.value = _uiState.value.copy(email = email, emailError = validateEmail(email))
+    }
+
+    fun onCurrentPasswordChanged(password: String) {
+        _uiState.value = _uiState.value.copy(currentPassword = password, currentPasswordError = null)
     }
 
     fun onNewPasswordChanged(password: String) {
@@ -70,6 +80,11 @@ class ChangePasswordViewModel @Inject constructor(
 
     // ON BUTTON CLICK
     fun saveNewPassword() {
+        if (_uiState.value.isLoading) return
+        if (_uiState.value.currentPassword.isBlank()) {
+            _uiState.value = _uiState.value.copy(currentPasswordError = "error_current_password_required")
+            return
+        }
         if (!validateAllFields()) return
         val state = _uiState.value
         viewModelScope.launch {
@@ -86,17 +101,28 @@ class ChangePasswordViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(isLoading = false, nameError = "error_name_mismatch")
                     return@launch
                 }
-                // Step 3 — new password must differ from current
-                val newHash = hashPassword(state.newPassword)
-                if (newHash == user.passwordHash) {
-                    _uiState.value = _uiState.value.copy(isLoading = false, newPasswordError = "error_password_same_as_old")
-                    return@launch
+                when (passwordStore.changePassword(user.id, state.currentPassword, state.newPassword)) {
+                    PasswordChangeResult.INVALID_CREDENTIALS -> {
+                        _uiState.value = _uiState.value.copy(currentPasswordError = "error_current_password_invalid")
+                    }
+                    PasswordChangeResult.SAME_PASSWORD -> {
+                        _uiState.value = _uiState.value.copy(newPasswordError = "error_password_same_as_old")
+                    }
+                    PasswordChangeResult.SUCCESS -> {
+                        _uiState.value = _uiState.value.copy(
+                            isSuccess = true,
+                            currentPassword = "",
+                            newPassword = "",
+                            confirmPassword = ""
+                        )
+                    }
                 }
-                // Step 4 — update Room
-                userDao.update(user.copy(passwordHash = newHash))
-                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
+            } catch (exception: CancellationException) {
+                throw exception
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = "error_unexpected")
+            } finally {
+                _uiState.value = _uiState.value.copy(isLoading = false)
             }
         }
     }
@@ -147,9 +173,4 @@ class ChangePasswordViewModel @Inject constructor(
         else -> null
     }
 
-    private fun hashPassword(password: String): String {
-        val digest = java.security.MessageDigest.getInstance("SHA-256")
-        val bytes  = digest.digest(password.toByteArray(Charsets.UTF_8))
-        return bytes.joinToString("") { "%02x".format(it) }
-    }
 }

@@ -50,6 +50,7 @@ fun LoginScreen(
     val uiState           by viewModel.uiState.collectAsState()
     val focusManager      = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
+    var showPasswordRecoveryInfo by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.navigateToHome) {
         if (uiState.navigateToHome) {
@@ -72,6 +73,26 @@ fun LoginScreen(
     val passwordBringIntoViewRequester = remember { BringIntoViewRequester() }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        if (showPasswordRecoveryInfo) {
+            AlertDialog(
+                onDismissRequest = { showPasswordRecoveryInfo = false },
+                title = { Text(stringResource(R.string.forgot_password)) },
+                text = { Text(stringResource(R.string.local_password_recovery_info)) },
+                confirmButton = {
+                    TextButton(onClick = { showPasswordRecoveryInfo = false }) {
+                        Text(stringResource(R.string.btn_understood))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showPasswordRecoveryInfo = false
+                        onNavigateToChangePassword()
+                    }) {
+                        Text(stringResource(R.string.label_change_password))
+                    }
+                }
+            )
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -259,7 +280,7 @@ fun LoginScreen(
                             // ── Forgot Password ────────────────────────────
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 TextButton(
-                                    onClick  = onNavigateToChangePassword,  //
+                                    onClick = { showPasswordRecoveryInfo = true },
                                     modifier = Modifier.align(Alignment.CenterStart)
                                 ) {
                                     Text(

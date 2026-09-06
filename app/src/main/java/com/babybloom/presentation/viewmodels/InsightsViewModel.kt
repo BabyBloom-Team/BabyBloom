@@ -56,6 +56,10 @@ class InsightsViewModel @Inject constructor(
     }
 
     fun generateInsight(childId: Long) {
+        if (BuildConfig.GEMINI_API_KEY.isBlank()) {
+            _uiState.value = InsightsUiState.Error("الرؤى الذكية غير مفعّلة في هذا الإصدار. يمكنك متابعة الأنشطة وعرض تقدم طفلك.")
+            return
+        }
         viewModelScope.launch {
             _uiState.value = InsightsUiState.Loading
             try {
@@ -88,7 +92,7 @@ class InsightsViewModel @Inject constructor(
         withContext(Dispatchers.IO) {
             val apiKey = BuildConfig.GEMINI_API_KEY
             val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/" +
-                "gemini-1.5-flash:generateContent?key=$apiKey"
+                "${BuildConfig.GEMINI_MODEL}:generateContent?key=$apiKey"
 
             val requestBody = JSONObject().apply {
                 put("contents", JSONArray().apply {

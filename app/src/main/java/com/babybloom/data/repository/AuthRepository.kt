@@ -3,7 +3,10 @@ package com.babybloom.data.repository
 import com.babybloom.di.SessionManager
 import com.babybloom.data.local.dao.UserDao
 import com.babybloom.data.local.entity.UserEntity
-import com.babybloom.util.HashUtils
+import com.babybloom.util.PasswordHasher
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +20,8 @@ sealed class AuthResult {
 @Singleton
 class AuthRepository @Inject constructor(
     private val userDao       : UserDao,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val passwordStore: LocalPasswordStore
 ) {
 
     // ── REGISTER ───────────────────────────────────────────────────────────
@@ -32,7 +36,7 @@ class AuthRepository @Inject constructor(
                 return AuthResult.Error("EMAIL_EXISTS")
 
             // 2. Hash password
-            val passwordHash = HashUtils.sha256(password)
+            val passwordHash = withContext(Dispatchers.Default) { PasswordHasher.hash(password) }
 
             // 3. Build entity
             val newUser = UserEntity(
@@ -59,6 +63,8 @@ class AuthRepository @Inject constructor(
 
             AuthResult.Success
 
+        } catch (exception: CancellationException) {
+            throw exception
         } catch (e: android.database.sqlite.SQLiteConstraintException) {
             AuthResult.Error("EMAIL_EXISTS")
         } catch (e: Exception) {
@@ -72,7 +78,7 @@ class AuthRepository @Inject constructor(
             val user = userDao.findByEmail(email.trim().lowercase())
                 ?: return AuthResult.InvalidCredentials
 
-            if (HashUtils.sha256(password) != user.passwordHash)
+            if (!passwordStore.verify(user.id, password))
                 return AuthResult.InvalidCredentials
 
             // Credentials match — save session
@@ -84,8 +90,10 @@ class AuthRepository @Inject constructor(
 
             AuthResult.Success
 
+        } catch (exception: CancellationException) {
+            throw exception
         } catch (e: Exception) {
-            AuthResult.Error(e.message ?: "Unknown error")
+            AuthResult.Error("UNKNOWN_ERROR")
         }
     }
 

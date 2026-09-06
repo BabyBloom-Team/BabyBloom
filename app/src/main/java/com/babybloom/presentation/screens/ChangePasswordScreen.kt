@@ -58,6 +58,7 @@ fun ChangePasswordScreen(
     val bringIntoViewScope = rememberCoroutineScope()
     val nameBringIntoViewRequester = remember { BringIntoViewRequester() }
     val emailBringIntoViewRequester = remember { BringIntoViewRequester() }
+    val currentPasswordBringIntoViewRequester = remember { BringIntoViewRequester() }
     val newPasswordBringIntoViewRequester = remember { BringIntoViewRequester() }
     val confirmPasswordBringIntoViewRequester = remember { BringIntoViewRequester() }
 
@@ -82,6 +83,8 @@ fun ChangePasswordScreen(
     @Composable
     fun resolveError(key: String?): String? = key?.let {
         when (it) {
+            "error_current_password_required" -> stringResource(R.string.error_current_password_required)
+            "error_current_password_invalid" -> stringResource(R.string.error_current_password_invalid)
             "error_name_required"         -> stringResource(R.string.error_name_required)
             "error_name_too_short"        -> stringResource(R.string.error_name_min_length)
             "error_name_too_long"         -> stringResource(R.string.error_name_max_length)
@@ -316,7 +319,38 @@ fun ChangePasswordScreen(
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                // ── NEW PASSWORD ───────────────────────────
+                                ChangePasswordLabel(text = stringResource(R.string.label_current_password))
+                                Spacer(modifier = Modifier.height(6.dp))
+                                OutlinedTextField(
+                                    value = uiState.currentPassword,
+                                    onValueChange = viewModel::onCurrentPasswordChanged,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .bringIntoViewRequester(currentPasswordBringIntoViewRequester)
+                                        .onFocusEvent { focusState ->
+                                            if (focusState.isFocused) {
+                                                bringIntoViewScope.launch {
+                                                    currentPasswordBringIntoViewRequester.bringIntoView()
+                                                }
+                                            }
+                                        },
+                                    shape = RoundedCornerShape(12.dp),
+                                    visualTransformation = PasswordVisualTransformation(),
+                                    isError = uiState.currentPasswordError != null,
+                                    supportingText = {
+                                        resolveError(uiState.currentPasswordError)?.let { Text(it) }
+                                    },
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Password,
+                                        imeAction = ImeAction.Next
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                                    ),
+                                    singleLine = true
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+
                                 ChangePasswordLabel(text = stringResource(R.string.label_new_password))
                                 Spacer(modifier = Modifier.height(6.dp))
                                 OutlinedTextField(

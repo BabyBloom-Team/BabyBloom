@@ -323,7 +323,8 @@
     <string name="ai_refresh_button">إنشاء رؤى جديدة</string>
     <string name="ai_loading">جارٍ تحليل بيانات طفلك…</string>
     <string name="ai_daily_limit_message">تم إنشاء رؤية اليوم. يمكنك إنشاء رؤية جديدة بعد منتصف الليل.</string>
-    <string name="ai_generation_failed">تعذّر إنشاء الرؤية. تحقّق من الإنترنت وإعداد مفتاح Gemini ثم حاول مرة أخرى.</string>
+    <string name="ai_generation_failed">تعذّر إنشاء الرؤية. تحقّق من اتصال الإنترنت وحاول مرة أخرى لاحقًا.</string>
+    <string name="ai_not_configured">الرؤى الذكية غير مفعّلة في هذا الإصدار. يمكنك متابعة الأنشطة وعرض تقدم طفلك.</string>
 
     <!-- Section titles -->
     <string name="ai_learning_summary">ملخّص الرؤى الرئيسية</string>
@@ -491,4 +492,9 @@
     <string name="session_speech_fallback_title">انقطع الإنترنت</string>
     <string name="session_speech_fallback_subtitle">سيتم تخطي نشاط الكلام والانتقال للنشاط التالي</string>
     <string name="session_speech_fallback_countdown">الانتقال خلال لحظات...</string>
+    <string name="label_current_password">كلمة المرور الحالية</string>
+    <string name="error_current_password_required">أدخل كلمة المرور الحالية لتأكيد هويتك</string>
+    <string name="error_current_password_invalid">كلمة المرور الحالية غير صحيحة. حاول مرة أخرى</string>
+    <string name="local_password_recovery_info">حسابك محفوظ على هذا الجهاز، ولا تتوفر استعادة كلمة المرور بالبريد الإلكتروني حاليًا. يمكنك تغييرها إذا كنت تتذكر كلمة المرور الحالية. لا تحذف بيانات التطبيق، لأن ذلك قد يفقدك بيانات الأطفال وتقدمهم.</string>
+    <string name="btn_understood">فهمت</string>
 </resources>

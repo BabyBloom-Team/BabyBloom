@@ -4,12 +4,12 @@ import com.babybloom.data.local.dao.UserDao
 import com.babybloom.data.local.entity.UserEntity
 import com.babybloom.domain.model.User
 import com.babybloom.domain.repository.UserRepository
-import com.babybloom.util.HashUtils
 import org.mindrot.jbcrypt.BCrypt
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val passwordStore: LocalPasswordStore
 ) : UserRepository {
 
     override suspend fun register(user: User): Long =
@@ -37,8 +37,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun verifyParentPassword(userId: Long, enteredPassword: String): Boolean {
-        val user = userDao.getById(userId) ?: return false
-        return HashUtils.sha256(enteredPassword) == user.passwordHash
+        return passwordStore.verify(userId, enteredPassword)
     }
 }
 

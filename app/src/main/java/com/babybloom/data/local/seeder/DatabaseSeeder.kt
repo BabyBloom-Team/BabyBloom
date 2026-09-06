@@ -14,7 +14,7 @@ import com.babybloom.data.local.entity.ChildEntity
 import com.babybloom.data.local.entity.ChildProfileEntity
 import com.babybloom.data.local.entity.SessionEntity
 import com.babybloom.data.local.entity.UserEntity
-import com.babybloom.util.HashUtils
+import com.babybloom.util.PasswordHasher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class DatabaseSeeder @Inject constructor(
             UserEntity(
                 name = "أحمد محمد",
                 email = "test@babybloom.com",
-                passwordHash = HashUtils.sha256("test1234!")
+                passwordHash = PasswordHasher.hash("test1234!")
             )
         )
 

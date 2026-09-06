@@ -201,10 +201,14 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+        return createDatabase(context, "babybloom_db")
+    }
+
+    internal fun createDatabase(context: Context, databaseName: String): AppDatabase {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
-            "babybloom_db"
+            databaseName
         )
             .addMigrations(
                 MIGRATION_9_10,
@@ -214,7 +218,6 @@ object DatabaseModule {
                 MIGRATION_13_14,
                 MIGRATION_14_15
             )
-            .fallbackToDestructiveMigration()
             .build()
     }
 

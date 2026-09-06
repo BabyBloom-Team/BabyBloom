@@ -33,6 +33,7 @@ android {
 
     buildTypes {
         release {
+            buildConfigField("String", "GEMINI_API_KEY", "\"\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
