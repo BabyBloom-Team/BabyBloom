@@ -53,12 +53,12 @@ The added ignore patterns prevent matching untracked files from being staged nor
 
 The initial source inspection identified the following outstanding items:
 
-- [ ] Replace direct production Gemini calls with a protected backend that keeps the API key server-side, verifies callers, and limits usage, or explicitly disable live AI in the demo build. The current Gradle configuration embeds the configured key in `BuildConfig`.
-- [ ] Replace plain SHA-256 password hashing and plan compatibility for existing local users. Decide whether the release uses local profiles or introduces cloud accounts.
-- [ ] Provide and test database migrations for supported upgrade paths before removing `fallbackToDestructiveMigration()`. Missing paths currently permit database erasure.
+- [x] The release build disables live Gemini calls by compiling an empty API key. A protected backend is still required before enabling live AI for public users; debug builds use the local key for development only.
+- [x] Local passwords now use salted PBKDF2-HMAC-SHA256. Existing SHA-256 accounts are verified once and upgraded atomically after a successful login. Cloud accounts are still a separate feature.
+- [x] Supported Room migrations are registered, destructive fallback is removed, the schema is exported, and migration-safety tests are included. Add a new migration whenever the schema changes.
 - [ ] Define backup, restore, and deletion behavior for account and child data; review the current permissive/sample backup configuration.
 - [ ] Review AI request content, camera and microphone behavior, permissions, and child-data handling. Prepare a privacy policy based on actual behavior.
-- [ ] Review seed/demo data and make sure real users start with the intended onboarding state.
+- [x] Demo seed data runs only in debug builds; release users start with the normal onboarding flow.
 - [ ] Test a fresh installation, an upgrade containing existing progress, denied permissions, missing speech services, and connectivity loss on supported devices.
 - [ ] Run unit tests and Android lint, and resolve release-blocking failures.
 

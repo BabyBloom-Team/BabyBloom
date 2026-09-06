@@ -12,7 +12,7 @@ Developed by the BabyBloom project team. Organization: [BabyBloom-Team](https://
 - Parent dashboards, child analytics, notifications, and parental controls.
 - Gemini-powered educational insights for parents when configured.
 
-This repository contains a graduation-project implementation. Public release preparation is in progress; see the [publishing checklist](docs/PUBLISHING.md) for outstanding work.
+This repository contains a graduation-project implementation. Release hardening is tracked in the [publishing checklist](docs/PUBLISHING.md); the current release build disables live AI until a protected backend is configured.
 
 ## Technology
 
@@ -52,7 +52,7 @@ These are local validation commands, not a claim that every current test passes.
 
 ## Data and accounts
 
-Room stores each installation's users, child profiles, sessions, and progress on that device. The current registration and login are local: they do not create a cloud account or synchronize data between phones.
+Room stores each installation's users, child profiles, sessions, and progress on that device. The current registration and login are local: they do not create a cloud account or synchronize data between phones. Local passwords use salted PBKDF2-HMAC-SHA256, and older local SHA-256 passwords are upgraded after successful verification.
 
 Room is suitable for a published Android application. Cloud account recovery and shared family access would require additional authentication, backend storage, and synchronization. Android backup behavior depends on device settings and the app's backup rules; it is not cross-device account synchronization.
 
