@@ -35,6 +35,18 @@ android {
         release {
             buildConfigField("String", "GEMINI_API_KEY", "\"\"")
             isMinifyEnabled = false
+            val signingPropertiesFile = rootProject.file("keystore.properties")
+            if (signingPropertiesFile.exists()) {
+                val signingProperties = Properties().apply {
+                    signingPropertiesFile.inputStream().use { load(it) }
+                }
+                signingConfig = signingConfigs.create("demoRelease") {
+                    storeFile = rootProject.file(signingProperties.getProperty("storeFile"))
+                    storePassword = signingProperties.getProperty("storePassword")
+                    keyAlias = signingProperties.getProperty("keyAlias")
+                    keyPassword = signingProperties.getProperty("keyPassword")
+                }
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

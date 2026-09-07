@@ -66,10 +66,22 @@ Room can remain the local database. Cross-device accounts, recovery, and shared 
 
 ## 5. Signed releases
 
+The repository is configured to use a local, ignored `keystore.properties` file when it exists. Never commit that file or the `.secrets/` directory.
+
+For a tester APK, create the signing key once in a private location:
+
+```powershell
+New-Item -ItemType Directory -Force .secrets | Out-Null
+keytool -genkeypair -v -keystore .secrets/babybloom-upload.jks -alias babybloom-upload -keyalg RSA -keysize 2048 -validity 10000
+Copy-Item keystore.properties.example keystore.properties
+```
+
+Edit only your local `keystore.properties` values. `keytool` asks for the passwords interactively; do not send them to the assistant or commit them. Keep a secure backup of the `.jks` file. Losing it can prevent updates to an APK distributed with that signing key.
+
 1. In Android Studio, choose **Build > Generate Signed Bundle / APK**.
 2. Choose **APK** for a downloadable release or **Android App Bundle** for Google Play.
 3. Create or select the intended signing credentials. Keep keys and passwords private and back them up securely.
-4. Build and test the release variant. Do not distribute a build containing a private Gemini key.
+4. Build and test the release variant. With the local properties configured, `.\gradlew.bat assembleRelease` produces a signed `app-release.apk`; without them, Gradle continues to produce `app-release-unsigned.apk`. Do not distribute a build containing a private Gemini key.
 5. For each subsequent release, increase `versionCode`, update `versionName`, and preserve the signing identity required for updates.
 6. For direct distribution, attach the signed APK to a versioned GitHub Release with installation steps, supported Android versions, known limitations, and changes.
 7. For Google Play, complete account verification, store assets, privacy and Data safety disclosures, target audience, content rating, reviewer access, and applicable testing requirements before requesting production access.
